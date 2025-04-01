@@ -1,8 +1,41 @@
-# created by virtualenv automatically
-config.py
+
+backend/config.py
 .env
 .venv/
 .idea/
 
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+*.log
+app.log
 
+# Node.js/React
+node_modules/
+npm-debug.log*
+/build
+/dist
 
+# System
+.DS_Store
+*.swp
+*.swo
+
+# IDE (extended)
+.vscode/
+*.iml
+
+# API/Data
+*.pdf  # Ignore sample resumes
+uploads/  # If you have an uploads folder
+
+# Virtual environments (extended)
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
