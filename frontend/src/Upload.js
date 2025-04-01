@@ -4,58 +4,50 @@ import axios from 'axios';
 export default function Upload({ onResults }) {
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) return;
 
     setIsLoading(true);
+    setError(null);
+
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      console.log('Uploading file:', file.name);
-      const response = await axios.post('/process_resume', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      console.log('Upload successful:', response.data);
+      const response = await axios.post('/process_resume', formData);
       onResults(response.data);
-    } catch (error) {
-      console.error('Upload error:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-      alert(`Upload failed: ${error.response?.data?.error || error.message}`);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Upload failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="file"
-        accept=".pdf"
-        onChange={(e) => setFile(e.target.files[0])}
-        style={{ margin: '10px 0', display: 'block' }}
-      />
+    <form onSubmit={handleSubmit} className="upload-form">
+      <div className="form-group">
+        <label>
+          Upload Resume (PDF)
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+        </label>
+      </div>
+
       <button
         type="submit"
         disabled={!file || isLoading}
-        style={{
-          padding: '10px 20px',
-          background: isLoading ? '#ccc' : '#4CAF50',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
+        className={`submit-btn ${isLoading ? 'loading' : ''}`}
       >
-        {isLoading ? 'Processing...' : 'Upload Resume'}
+        {isLoading ? 'Processing...' : 'Analyze Resume'}
       </button>
+
+      {error && <div className="error-message">{error}</div>}
     </form>
   );
 }

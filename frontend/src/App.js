@@ -8,13 +8,15 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1>AI Resume Screener</h1>
-      <Upload onResults={setResults} />
-      {results && (
-        <div className="results-container">
-          <Results data={results} />
-        </div>
-      )}
+      <header>
+        <h1>AI Resume Screener</h1>
+        <p>Upload a resume to analyze candidate-job fit</p>
+      </header>
+
+      <main>
+        <Upload onResults={setResults} />
+        {results && <Results data={results} />}
+      </main>
     </div>
   );
 }

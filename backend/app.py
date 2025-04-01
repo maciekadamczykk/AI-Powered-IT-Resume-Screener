@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from config import DEFAULT_JOB_DESCRIPTION
 from flask_cors import CORS
 import requests
 import spacy
@@ -66,41 +67,8 @@ def process_resume():
         candidate_skills = [skill.get("name", "") for skill in parsed_data.get("skills", [])]
 
         # Process job description
-        job_description = """
-        Financial Analyst Job Description
+        job_description = DEFAULT_JOB_DESCRIPTION
 
-        Position: Financial Analyst
-        Location: New York, NY (Hybrid)
-        Type: Full-time
-
-        Key Responsibilities:
-        - Develop financial models to support valuation, planning, and forecasting
-        - Analyze financial data and create monthly/quarterly reports for senior management
-        - Evaluate financial performance by comparing actual results to plans and forecasts
-        - Identify trends in financial performance and provide recommendations for improvement
-        - Assist with budgeting and forecasting processes
-        - Prepare presentations for board meetings and investor relations
-        - Collaborate with accounting team to ensure accurate financial reporting
-
-        Required Qualifications:
-        - Bachelor's degree in Finance, Accounting, or related field
-        - 2+ years of experience in financial planning & analysis (FP&A)
-        - Advanced proficiency in Microsoft Excel (pivot tables, VLOOKUP, financial modeling)
-        - Experience with financial systems (Oracle, Hyperion, or similar)
-        - Strong understanding of GAAP accounting principles
-        - Excellent analytical and problem-solving skills
-
-        Preferred Qualifications:
-        - MBA or progress toward CFA certification
-        - Experience with Power BI or Tableau for data visualization
-        - Knowledge of SQL for data analysis
-        - Experience in the banking or fintech industry
-
-        Compensation:
-        - Competitive salary ($85,000-$110,000)
-        - Annual bonus potential
-        - Comprehensive benefits package
-        """
         # Calculate similarity
         def extract_keywords(text):
             doc = nlp(text)

@@ -1,18 +1,51 @@
+import React from 'react';
+
 export default function Results({ data }) {
   return (
-    <div style={{ marginTop: '20px', border: '1px solid #ddd', padding: '15px' }}>
-      <h2>Results for: {data.candidate_name}</h2>
-      <h3>Skills:</h3>
-      <ul>
-        {data.skills.map((skill, i) => (
-          <li key={i}>{skill}</li>
-        ))}
-      </ul>
-      <h3>Match Score: <span style={{ color: data.cosine_similarity > 0.5 ? 'green' : 'red' }}>
-        {(data.cosine_similarity * 100).toFixed(1)}%
-      </span></h3>
-      <h3>Common Keywords:</h3>
-      <p>{data.common_keywords.join(', ')}</p>
+    <div className="results-container">
+      <h2>Analysis Results</h2>
+
+      <div className="results-grid">
+        <div className="candidate-info">
+          <h3>Candidate</h3>
+          <p className="candidate-name">{data.candidate_name}</p>
+
+          <h3>Match Score</h3>
+          <div className="score-bar">
+            <div
+              className="score-fill"
+              style={{ width: `${data.cosine_similarity * 100}%` }}
+            ></div>
+            <span className="score-text">
+              {(data.cosine_similarity * 100).toFixed(1)}%
+            </span>
+          </div>
+        </div>
+
+        <div className="skills-section">
+          <h3>Skills</h3>
+          <div className="skills-list">
+            {data.skills.map((skill, i) => (
+              <span key={i} className="skill-tag">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {data.common_keywords?.length > 0 && (
+        <div className="keywords-section">
+          <h3>Matching Keywords</h3>
+          <div className="keywords-list">
+            {data.common_keywords.map((keyword, i) => (
+              <span key={i} className="keyword-tag">
+                ✓ {keyword}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
