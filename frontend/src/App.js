@@ -1,219 +1,112 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMoon, faSun, faRobot, faBolt, faChartLine, faFileUpload } from '@fortawesome/free-solid-svg-icons';
-import Upload from './Upload';
-import Results from './Results';
-import './App.css';
+import { ThemeProvider, CssBaseline, Box } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
+import { AnimatePresence } from 'framer-motion';
+import styled from '@emotion/styled';
+import JobDescriptionForm from './components/JobDescriptionForm';
+import ResumeUpload from './components/ResumeUpload';
+import AnalysisResults from './components/AnalysisResults';
+import Navigation from './components/Navigation';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#7C3AED',
+      light: '#9F67FF',
+      dark: '#5B21B6',
+    },
+    secondary: {
+      main: '#10B981',
+      light: '#34D399',
+      dark: '#059669',
+    },
+    background: {
+      default: '#111827',
+      paper: '#1F2937',
+    },
+    text: {
+      primary: '#F3F4F6',
+      secondary: '#D1D5DB',
+    },
+  },
+  typography: {
+    fontFamily: "'Inter', sans-serif",
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          background: 'linear-gradient(135deg, #111827 0%, #1F2937 100%)',
+          minHeight: '100vh',
+        },
+      },
+    },
+  },
+});
+
+const AppContainer = styled(Box)`
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
+const MainContent = styled(Box)`
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+`;
 
 function App() {
-  const [results, setResults] = useState(null);
+  const [step, setStep] = useState('job-description');
   const [jobDescription, setJobDescription] = useState('');
-  const [showJobForm, setShowJobForm] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [results, setResults] = useState(null);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.body.classList.toggle('dark-mode');
+  const handleJobDescriptionSubmit = (description) => {
+    setJobDescription(description);
+    setStep('resume-upload');
   };
 
-  const handleJobSubmit = async (e) => {
-    e.preventDefault();
-    setShowJobForm(false);
+  const handleResultsReceived = (analysisResults) => {
+    setResults(analysisResults);
+    setStep('results');
+  };
+
+  const handleBack = () => {
+    if (step === 'resume-upload') {
+      setStep('job-description');
+    } else if (step === 'results') {
+      setStep('resume-upload');
+    }
   };
 
   return (
-    <div className={`app-container ${darkMode ? 'dark-mode' : ''}`}>
-      <motion.header 
-        className={`app-header ${darkMode ? 'dark-mode' : ''}`}
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="header-content">
-          <motion.h1
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            AI Resume Screener
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            Intelligent resume analysis powered by advanced AI
-          </motion.p>
-          <motion.div 
-            className="header-badges"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <motion.span 
-              className="badge"
-              whileHover={{ scale: 1.05, y: -2 }}
-            >
-              <FontAwesomeIcon icon={faRobot} />
-              AI-Powered
-            </motion.span>
-            <motion.span 
-              className="badge"
-              whileHover={{ scale: 1.05, y: -2 }}
-            >
-              <FontAwesomeIcon icon={faBolt} />
-              Instant Analysis
-            </motion.span>
-            <motion.span 
-              className="badge"
-              whileHover={{ scale: 1.05, y: -2 }}
-            >
-              <FontAwesomeIcon icon={faChartLine} />
-              Detailed Insights
-            </motion.span>
-          </motion.div>
-          <motion.button 
-            onClick={toggleDarkMode} 
-            className="glass-btn"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <FontAwesomeIcon icon={darkMode ? faSun : faMoon} />
-            {darkMode ? 'Light Mode' : 'Dark Mode'}
-          </motion.button>
-        </div>
-      </motion.header>
-
-      <AnimatePresence mode="wait">
-        <motion.main className="main-content">
-          {showJobForm ? (
-            <motion.form 
-              key="job-form"
-              onSubmit={handleJobSubmit} 
-              className="job-form glass-morphism"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="form-header">
-                <motion.div 
-                  className="form-icon"
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                >
-                  <FontAwesomeIcon icon={faFileUpload} />
-                </motion.div>
-                <div className="form-title">
-                  <h2>Job Requirements</h2>
-                  <p>Start by providing the job description</p>
-                </div>
-              </div>
-              
-              <div className="form-content">
-                <div className="form-group">
-                  <label htmlFor="jobDescription">
-                    Enter job description or requirements:
-                  </label>
-                  <textarea
-                    id="jobDescription"
-                    value={jobDescription}
-                    onChange={(e) => setJobDescription(e.target.value)}
-                    placeholder="Paste the job description here..."
-                    rows="8"
-                    className="styled-textarea"
-                    required
-                  />
-                </div>
-                
-                <motion.div 
-                  className="form-features"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <motion.div 
-                    className="feature"
-                    whileHover={{ scale: 1.05, y: -2 }}
-                  >
-                    <FontAwesomeIcon icon={faRobot} />
-                    <span>AI Analysis</span>
-                  </motion.div>
-                  <motion.div 
-                    className="feature"
-                    whileHover={{ scale: 1.05, y: -2 }}
-                  >
-                    <FontAwesomeIcon icon={faBolt} />
-                    <span>Instant Results</span>
-                  </motion.div>
-                  <motion.div 
-                    className="feature"
-                    whileHover={{ scale: 1.05, y: -2 }}
-                  >
-                    <FontAwesomeIcon icon={faChartLine} />
-                    <span>Smart Matching</span>
-                  </motion.div>
-                </motion.div>
-
-                <motion.button 
-                  type="submit" 
-                  className="submit-btn pulse"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  disabled={!jobDescription.trim()}
-                >
-                  Continue to Resume Upload
-                  <FontAwesomeIcon icon={faFileUpload} />
-                </motion.button>
-              </div>
-            </motion.form>
-          ) : (
-            <motion.div 
-              key="analysis-section"
-              className="analysis-section glass-morphism"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="section-header">
-                <motion.button
-                  className="back-btn glass-btn"
-                  onClick={() => setShowJobForm(true)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FontAwesomeIcon icon={faBolt} />
-                  Edit Job Description
-                </motion.button>
-              </div>
-              
-              <Upload onResults={setResults} jobDescription={jobDescription} />
-              {results && <Results data={results} />}
-            </motion.div>
-          )}
-        </motion.main>
-      </AnimatePresence>
-
-      <motion.footer 
-        className="app-footer"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-      >
-        <div className="footer-content">
-          <p>
-            <FontAwesomeIcon icon={faRobot} />
-            AI-Powered Analysis
-          </p>
-          <p>
-            <FontAwesomeIcon icon={faBolt} />
-            Real-time Results
-          </p>
-        </div>
-      </motion.footer>
-    </div>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <AppContainer>
+        <Navigation onBack={step !== 'job-description' ? handleBack : undefined} />
+        <MainContent>
+          <AnimatePresence mode="wait">
+            {step === 'job-description' && (
+              <JobDescriptionForm key="job-form" onSubmit={handleJobDescriptionSubmit} />
+            )}
+            {step === 'resume-upload' && (
+              <ResumeUpload 
+                key="upload"
+                jobDescription={jobDescription}
+                onResults={handleResultsReceived}
+              />
+            )}
+            {step === 'results' && results && (
+              <AnalysisResults key="results" data={results} />
+            )}
+          </AnimatePresence>
+        </MainContent>
+      </AppContainer>
+    </ThemeProvider>
   );
 }
 
