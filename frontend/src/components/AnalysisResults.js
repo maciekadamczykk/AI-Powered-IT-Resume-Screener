@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Paper, Box, Typography, Tab, Tabs, CircularProgress } from '@mui/material';
-import { Assessment, BusinessCenter, Code } from '@mui/icons-material';
+import { Assessment, BusinessCenter } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import styled from '@emotion/styled';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -36,8 +36,8 @@ const TabPanel = ({ children, value, index }) => (
   </div>
 );
 
-const SkillCard = styled(Box)`
-  padding: 1rem;
+const ExperienceCard = styled(Box)`
+  padding: 1.5rem;
   border-radius: ${props => props.theme.shape.borderRadius}px;
   background: rgba(124, 58, 237, 0.1);
   border: 1px solid rgba(124, 58, 237, 0.2);
@@ -63,11 +63,11 @@ const AnalysisResults = ({ data }) => {
   };
 
   const chartData = {
-    labels: ['Matched Skills', 'Missing Skills'],
+    labels: ['Match Score', 'Improvement Area'],
     datasets: [
       {
-        data: [data.common_keywords.length, data.missing_keywords.length],
-        backgroundColor: ['#10B981', '#7C3AED'],
+        data: [matchScore, 100 - matchScore],
+        backgroundColor: [getScoreColor(matchScore), 'rgba(124, 58, 237, 0.1)'],
         borderWidth: 0,
       },
     ],
@@ -87,6 +87,14 @@ const AnalysisResults = ({ data }) => {
         },
       },
     },
+  };
+
+  const getScoreMessage = (score) => {
+    if (score >= 85) return 'Exceptional match! The candidate is highly qualified for this position.';
+    if (score >= 70) return 'Strong match! The candidate demonstrates solid qualifications.';
+    if (score >= 55) return 'Good match with potential for growth.';
+    if (score >= 40) return 'Moderate match. Consider for junior positions.';
+    return 'Basic match. May need additional training.';
   };
 
   return (
@@ -132,7 +140,6 @@ const AnalysisResults = ({ data }) => {
             sx={{ mb: 2 }}
           >
             <Tab icon={<Assessment />} label="Overview" />
-            <Tab icon={<Code />} label="Skills" />
             <Tab icon={<BusinessCenter />} label="Experience" />
           </Tabs>
         </Box>
@@ -143,57 +150,26 @@ const AnalysisResults = ({ data }) => {
               <Doughnut data={chartData} options={chartOptions} />
             </Box>
             <Typography variant="h6" gutterBottom>
-              Key Findings
+              Assessment
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              {matchScore >= 85
-                ? 'Exceptional match! The candidate\'s profile strongly aligns with the job requirements.'
-                : matchScore >= 70
-                ? 'Good match! The candidate meets most of the key requirements.'
-                : matchScore >= 55
-                ? 'Moderate match. The candidate has relevant skills but some gaps exist.'
-                : 'Basic match. Consider additional training or junior positions.'}
+              {getScoreMessage(matchScore)}
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+              Candidate Name: {data.candidate_name}
             </Typography>
           </Box>
         </TabPanel>
 
         <TabPanel value={activeTab} index={1}>
           <Box sx={{ display: 'grid', gap: 3 }}>
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Matched Skills ({data.common_keywords.length})
-              </Typography>
-              {data.common_keywords.map((skill) => (
-                <SkillCard key={skill}>
-                  <Typography>{skill}</Typography>
-                </SkillCard>
-              ))}
-            </Box>
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Missing Skills ({data.missing_keywords.length})
-              </Typography>
-              {data.missing_keywords.map((skill) => (
-                <SkillCard
-                  key={skill}
-                  sx={{ borderColor: 'rgba(239, 68, 68, 0.2)' }}
-                >
-                  <Typography>{skill}</Typography>
-                </SkillCard>
-              ))}
-            </Box>
-          </Box>
-        </TabPanel>
-
-        <TabPanel value={activeTab} index={2}>
-          <Box sx={{ display: 'grid', gap: 3 }}>
             {data.experience?.map((exp, index) => (
-              <SkillCard key={index}>
+              <ExperienceCard key={index}>
                 <Typography variant="h6">{exp.title}</Typography>
                 <Typography variant="body2" color="text.secondary">
                   {exp.company}
                 </Typography>
-              </SkillCard>
+              </ExperienceCard>
             ))}
           </Box>
         </TabPanel>

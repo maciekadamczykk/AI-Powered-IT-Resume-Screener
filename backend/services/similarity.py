@@ -1,6 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from typing import List, Dict, Union
+import re
 
 class SimilarityAnalyzer:
     def __init__(self):
@@ -35,7 +36,7 @@ class SimilarityAnalyzer:
         if total_requirements == 0:
             return 0.0
             
-        # Calculate base scores with more lenient weights
+        # Calculate base scores with more generous weights
         num_exact = len(matches.get("exact_matches", []))
         num_partial = len(matches.get("partial_matches", []))
         num_related = len(matches.get("related_matches", []))
@@ -47,63 +48,67 @@ class SimilarityAnalyzer:
             matches["related_matches"]
         )
         
-        # More lenient weighting system
-        total_matches = num_exact + (num_partial * 0.7) + (num_related * 0.5)  # Increased weights for partial and related
+        # More generous weighting system
+        total_matches = (
+            num_exact + 
+            (num_partial * 0.85) +  # Increased from 0.7
+            (num_related * 0.65)    # Increased from 0.5
+        )
         coverage_ratio = total_matches / total_requirements
         
-        # Adjusted weighted score with more lenient requirements
+        # Adjusted weighted score with more generous requirements
         weighted_score = (
-            (0.35 * (num_exact / total_requirements)) +      # Reduced from 0.40
-            (0.25 * (num_partial / total_requirements)) +    # Increased from 0.15
-            (0.15 * (num_related / total_requirements)) +    # Increased from 0.05
-            (0.10 * competency_scores['technical']) +        # Reduced from 0.20
-            (0.075 * competency_scores['analytical']) +      # Reduced from 0.10
-            (0.075 * competency_scores['business'])         # Reduced from 0.10
+            (0.30 * (num_exact / total_requirements)) +      # Reduced from 0.35
+            (0.30 * (num_partial / total_requirements)) +    # Increased from 0.25
+            (0.20 * (num_related / total_requirements)) +    # Increased from 0.15
+            (0.10 * competency_scores['technical']) +
+            (0.05 * competency_scores['analytical']) +
+            (0.05 * competency_scores['business'])
         )
         
-        # More lenient education boost
-        education_boost = self._calculate_education_boost(education) * 0.8  # Increased from 0.7
+        # More generous education boost
+        education_boost = self._calculate_education_boost(education) * 0.9  # Increased from 0.8
         
-        # More lenient experience boost
-        experience_boost = self._calculate_experience_boost(experience) * 0.7  # Increased from 0.6
+        # More generous experience boost
+        experience_boost = self._calculate_experience_boost(experience) * 0.8  # Increased from 0.7
         
-        # Calculate advanced competency score with more lenient standards
+        # Calculate advanced competency score
         advanced_competency = (
             competency_scores['technical'] * 0.4 +
             competency_scores['analytical'] * 0.3 +
             competency_scores['business'] * 0.3
-        ) * 0.9  # Increased from 0.8
+        ) * 0.95  # Increased from 0.9
         
-        # More lenient qualification multiplier
-        qualification_multiplier = 1.0 + (education_boost * 0.4) + (experience_boost * 0.4)
+        # More generous qualification multiplier
+        qualification_multiplier = 1.0 + (education_boost * 0.5) + (experience_boost * 0.5)  # Increased from 0.4
         
         # Increased senior experience bonus
         if any('senior' in exp.get('title', '').lower() for exp in experience):
-            qualification_multiplier += 0.2  # Increased from 0.15
+            qualification_multiplier += 0.25  # Increased from 0.2
             
         if any('data science' in edu.get('degree', '').lower() for edu in education):
-            qualification_multiplier += 0.15  # Increased from 0.1
+            qualification_multiplier += 0.2  # Increased from 0.15
             
-        # More lenient experience scaling
+        # More generous experience scaling
         years_of_experience = len(experience)
         if years_of_experience >= 5:  # Senior level
-            qualification_multiplier *= 1.25  # Increased from 1.2
+            qualification_multiplier *= 1.35  # Increased from 1.25
         elif years_of_experience >= 3:  # Mid level
-            qualification_multiplier *= 1.15  # Increased from 1.1
+            qualification_multiplier *= 1.25  # Increased from 1.15
             
-        # Normalize the score with more lenient weighting
+        # Normalize the score with more generous weighting
         base_score = (
-            weighted_score * 0.6 +  # Reduced core skill matching weight
-            advanced_competency * 0.25 +  # Increased competency coverage
-            min(1.0, coverage_ratio) * 0.15  # Increased overall coverage impact
+            weighted_score * 0.55 +       # Reduced core skill matching weight
+            advanced_competency * 0.30 +  # Increased competency coverage
+            min(1.0, coverage_ratio) * 0.15
         )
         
-        # Apply final multipliers with a more lenient cap
-        final_score = base_score * min(1.3, qualification_multiplier)  # Increased cap from 1.2
+        # Apply final multipliers with a more generous cap
+        final_score = base_score * min(1.4, qualification_multiplier)  # Increased cap from 1.3
         
-        # More lenient handling of overqualified candidates
+        # More generous handling of overqualified candidates
         if qualification_multiplier > 1.5 and advanced_competency > 0.7:
-            final_score = min(0.98, final_score * 1.15)  # Increased cap from 0.95
+            final_score = min(1.0, final_score * 1.2)  # Increased from 1.15
             
         return min(1.0, max(0.0, final_score))  # Ensure score is between 0 and 1
     
@@ -191,9 +196,6 @@ class SimilarityAnalyzer:
     def calculate_context_similarity(self, text1: str, text2: str) -> float:
         """Calculate TF-IDF based cosine similarity between two texts."""
         try:
-            # Clean texts by removing special characters and normalizing whitespace
-            import re
-            
             def clean_text(text):
                 # Replace special characters with spaces
                 text = re.sub(r'[^\w\s]', ' ', text.lower())
